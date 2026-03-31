@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  notebook:
+    build: .
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    ports:
+      - "8888:8888"
+    environment:
+      - PYTHONPATH=/app/src
