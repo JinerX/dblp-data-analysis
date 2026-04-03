@@ -4,8 +4,10 @@ services:
   notebook:
     build: .
     volumes:
-      - .:/app
+      - ./src:/app/src
+      - ./notebooks:/app/notebooks
       - ./data:/app/data
+      - ./pyproject.toml:/app/pyproject.toml
     ports:
       - "8888:8888"
     environment:
