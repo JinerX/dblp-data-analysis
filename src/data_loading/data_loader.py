@@ -10,13 +10,30 @@ from lxml import etree
 from src.constants import XML_GZ_PATH, ROOT_TAGS, DB_PATH
 from src.utils.logger import get_logger
 
+from typing import Optional
 
 logger = get_logger("person_work_builder", logging.INFO)
 
 BATCH_SIZE = 20000
 
 
-def safe_text(elem, tag_name):
+def safe_text(elem: etree._Element, tag_name: str) -> Optional[str]:
+    """
+    Safely extract and normalize text from an XML element.
+
+    Parameters
+    ----------
+    elem : etree._Element
+        XML element to extract data from.
+    tag_name : str
+        Child tag name to search for.
+
+    Returns
+    -------
+    Optional[str]
+        Stripped text value if present, otherwise None.
+    """
+    
     value = elem.findtext(tag_name)
     if value is None:
         return None
@@ -24,11 +41,39 @@ def safe_text(elem, tag_name):
     return value or None
 
 
-def sql_escape_path(path):
+def sql_escape_path(path: str) -> str:
+    """
+    Escape a file path for safe usage inside SQL queries.
+
+    Parameters
+    ----------
+    path : str
+        File path to escape.
+
+    Returns
+    -------
+    str
+        Escaped path safe for embedding in SQL.
+    """
+    
     return path.replace("'", "''")
 
 
-def normalize_creator_name(name):
+def normalize_creator_name(name: str) -> Optional[str]:
+    """
+    Normalize an author/creator name.
+
+    Parameters
+    ----------
+    name : str
+        Raw author name.
+
+    Returns
+    -------
+    Optional[str]
+        Normalized name or None if invalid.
+    """
+
     if name is None:
         return None
 
@@ -45,9 +90,36 @@ def normalize_creator_name(name):
 
 
 def build_person_and_work_tables(
-    db_path = DB_PATH,
-    compressed_path = XML_GZ_PATH,
-):
+    db_path: str = DB_PATH,
+    compressed_path: str = XML_GZ_PATH,
+) -> duckdb.DuckDBPyConnection:
+    """
+    Build `person` and `work` tables from DBLP XML data.
+
+    This function:
+    - Parses the compressed XML dataset
+    - Extracts work metadata into a TSV file
+    - Extracts author/editor names into a staging TSV
+    - Loads both into DuckDB
+    - Builds a canonical `person` table using alias resolution
+
+    Tables created:
+    - person_names_staging (temporary)
+    - work (final)
+    - person (final)
+
+    Parameters
+    ----------
+    db_path : str
+        Path to DuckDB database file.
+    compressed_path : str
+        Path to compressed DBLP XML (.gz) file.
+
+    Returns
+    -------
+    duckdb.DuckDBPyConnection
+        Open connection to the database.
+    """
     conn = duckdb.connect(db_path)
 
     conn.execute("DROP TABLE IF EXISTS person")
@@ -226,9 +298,34 @@ def build_person_and_work_tables(
             pass
 
 def build_work_contributor_and_relation_tables(
-    db_path=DB_PATH,
-    compressed_path=XML_GZ_PATH,
-):
+    db_path: str =DB_PATH,
+    compressed_path: str =XML_GZ_PATH,
+) -> duckdb.DuckDBPyConnection:
+    """
+    Build `work_contributor` and `work_relation` tables.
+
+    This function:
+    - extracts author/editor roles per work
+    - resolves aliases to canonical names
+    - maps contributors to `person_id`
+    - creates collaboration links between works via crossrefs
+
+    Tables created:
+    - work_contributor (final)
+    - work_relation (final)
+
+    Parameters
+    ----------
+    db_path : str
+        Path to DuckDB database.
+    compressed_path : str
+        Path to DBLP XML .gz file.
+
+    Returns
+    -------
+    duckdb.DuckDBPyConnection
+        Open connection to the database.
+    """
     conn = duckdb.connect(db_path)
 
     conn.execute("DROP TABLE IF EXISTS work_contributor")

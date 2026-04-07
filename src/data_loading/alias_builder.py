@@ -9,13 +9,34 @@ from lxml import etree
 
 from src.constants import XML_GZ_PATH, ROOT_TAGS, DB_PATH
 from src.utils.logger import get_logger
+from typing import Optional, List, Tuple
+
 
 logger = get_logger("alias_builder", logging.INFO)
 BATCH_SIZE = 10000
 
 
 
-def normalize_creator_name(name):
+def normalize_creator_name(name: str) -> Optional[str]:
+    """
+    Normalize an author/creator name string.
+
+    This function performs basic normalization:
+    - removes extra whitespace
+    - strips leading/trailing whitespace
+    - removes surrounding quotes
+
+    Parameters
+    ----------
+    name : str
+        Raw name string extracted from XML.
+
+    Returns
+    -------
+    Optional[str]
+        Normalized name, or None if the input is empty or invalid.
+    """
+
     if name is None:
         return None
 
@@ -30,7 +51,29 @@ def normalize_creator_name(name):
 
 
 
-def build_aliases():
+def build_aliases() -> None:
+    """
+    Build an author alias mapping from the DBLP XML dataset.
+
+    This function:
+    1. Parses the compressed XML dataset
+    2. Extracts author aliases from homepage (`www`) entries
+    3. Writes intermediate results to a temporary TSV file
+    4. Loads the data into DuckDB
+    5. Deduplicates aliases into a final `author_aliases` table
+
+    The canonical name for each author group is chosen as the
+    first author listed in a homepage entry.
+
+    Tables created:
+    - author_aliases_staging (temporary)
+    - author_aliases (final mapping)
+    
+    Returns
+    -------
+    None
+    """
+
     logger.info(f"Starting to scan {XML_GZ_PATH}")
 
     conn = duckdb.connect(DB_PATH)

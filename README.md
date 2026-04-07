@@ -33,5 +33,3 @@ The data analysis itself is performed in the `notebooks/EDA.ipynb` there you can
 - `/notebooks/EDA.ipynb`- Main presentable notebook with data analysis proper
 - `/notebooks/initial_data_profiling.ipynb` - notebook which was used to scour out the structure of the initial xml itself
 
-# TBA
-Documentation
