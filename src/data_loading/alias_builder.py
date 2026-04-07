@@ -14,6 +14,22 @@ logger = get_logger("alias_builder", logging.INFO)
 BATCH_SIZE = 10000
 
 
+
+def normalize_creator_name(name):
+    if name is None:
+        return None
+
+    name = " ".join(name.split())
+    name = name.strip()
+    name = name.strip("'\"“”‘’")
+
+    if not name:
+        return None
+
+    return name
+
+
+
 def build_aliases():
     logger.info(f"Starting to scan {XML_GZ_PATH}")
 
@@ -54,8 +70,8 @@ def build_aliases():
                     if key.startswith("homepages/"):
                         authors = [a.text for a in elem.iterchildren(tag="author") if a.text]
                         if authors:
-                            canon_name = authors[0]
-                            buffer.extend((author, canon_name) for author in authors)
+                            canon_name = normalize_creator_name(authors[0])
+                            buffer.extend((normalize_creator_name(author), canon_name) for author in authors)
                             processed_www += 1
 
                         if len(buffer) >= BATCH_SIZE:
@@ -94,6 +110,10 @@ def build_aliases():
         return
     
     logger.info(f"Aliasing complete with {total_aliases[0]} entries")
+
+    logger.info(f"Removing aliases_staging table")
+    conn.execute("DROP TABLE IF EXISTS author_aliases_staging")
+
 
     conn.close()
 

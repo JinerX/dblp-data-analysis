@@ -7,8 +7,12 @@ services:
       - ./src:/app/src
       - ./notebooks:/app/notebooks
       - ./data:/app/data
+      - ./logs:/app/logs
       - ./pyproject.toml:/app/pyproject.toml
     ports:
       - "8888:8888"
     environment:
       - PYTHONPATH=/app/src
+      - JUPYTER_TOKEN=nokia
+    command: >
+      jupyter lab --ip=0.0.0.0 --no-browser --allow-root 

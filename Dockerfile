@@ -16,4 +16,3 @@ RUN poetry config virtualenvs.create false \
 
 EXPOSE 8888
 
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root", "--no-browser", "--NotebookApp.token='nokia'"]

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "tmp"
+name = "dblp-analysis"
 version = "0.1.0"
 description = "Nokia Recruitment"
 authors = ["Jędrzej Sajnóg <sajnog.jedrzej@gmail.com>"]
@@ -13,6 +13,8 @@ numpy = "^1.26.4"
 pandas = "^2.1.3"
 jupyterlab = "^4.0.9"
 matplotlib = "^3.8.2"
+scikit-learn = "^1.4.2"
+networkx = "^3.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
